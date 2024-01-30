@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     lsb-release
 
+RUN apt install -y direnv nano
 
 # Add HashiCorp GPG key and repository
 RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -36,10 +37,16 @@ RUN cd /home/docker && mkdir actions-runner && cd actions-runner \
     && curl -O -L https://github.com/actions/runner/releases/download/v2.312.0/actions-runner-linux-x64-2.312.0.tar.gz \
     && tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
 
+RUN mkdir /home/docker/.ssh
 RUN chown -R docker ~docker && /home/docker/actions-runner/bin/installdependencies.sh
 
 COPY start.sh start.sh
 COPY cleanup.sh cleanup.sh
+
+COPY id_rsa /home/docker/.ssh/id_rsa
+COPY id_rsa.pub /home/docker/.ssh/id_rsa.pub
+
+RUN chmod 400 /home/docker/.ssh/id_*
 # make the script executable
 RUN chmod +x cleanup.sh
 RUN chmod +x start.sh
